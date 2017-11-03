@@ -1,40 +1,21 @@
 import React, { Component } from "react";
 import "./App.css";
 import Character from "./Character";
-const Pusher = window.Pusher;
+const io = window.io;
 
 class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      characters: {
-        one: {
-          id: "one",
-          name: "Phil",
-          status: "uncomfortable",
-          currentLocation: { x: 10, y: 20 }
-        }
-      },
+      characters: {},
       name: "",
       id: "",
       status: ""
     };
-
-    Pusher.logToConsole = true;
-    const pusher = new Pusher("b280c5d944f17da55d8b", {
-      cluster: "us2",
-      encrypted: true
-    });
-
-    this.channel = pusher.subscribe("circle-quest");
   }
 
-  channel = null;
-
   componentDidMount() {
-    setTimeout(() => {
-      this.changeCharacterLocation(this.state.characters["one"], 500, 300);
-    }, 500);
+    this.socket = io("https://secret-hollows-54069.herokuapp.com/circle-quest");
   }
 
   changeCharacterLocation = (character, newX, newY) => {
@@ -51,9 +32,19 @@ class App extends Component {
     this.setState(newState);
   };
 
+  onCharacterCreated = character => {
+    const newState = {
+      characters: {
+        ...this.state.characters,
+        [character.id]: character
+      }
+    };
+
+    this.setState(newState);
+  };
+
   handleSubmit = e => {
     e.preventDefault();
-    console.log("handling submit");
 
     const newCharacter = {
       id: this.state.id,
@@ -65,18 +56,9 @@ class App extends Component {
       }
     };
 
-    console.log(newCharacter);
+    this.socket.on("player-joined", this.onCharacterCreated);
 
-    const newState = {
-      characters: {
-        ...this.state.characters,
-        [this.state.id]: newCharacter
-      }
-    };
-
-    console.log(newState);
-
-    this.setState(newState);
+    this.socket.emit("join", newCharacter);
   };
 
   handleChange = e => {
@@ -89,7 +71,41 @@ class App extends Component {
       return <Character key={key} character={this.state.characters[key]} />;
     });
 
-    console.log(characterList);
+    const showForm = characterList.length > 0;
+    const displayGame = !showForm ? (
+      <p>Please fill out the form to join the game</p>
+    ) : (
+      <div className="App-game">{characterList}</div>
+    );
+
+    const displayForm = !showForm ? (
+      <form onSubmit={this.handleSubmit}>
+        <label>
+          Id:
+          <input name="id" onChange={this.handleChange} value={this.state.id} />
+        </label>
+        <br />
+        <label>
+          Name:
+          <input
+            name="name"
+            onChange={this.handleChange}
+            value={this.state.name}
+          />
+        </label>
+        <br />
+        <label>
+          Status:
+          <input
+            name="status"
+            onChange={this.handleChange}
+            value={this.state.status}
+          />
+        </label>
+        <br />
+        <button type="submit">Join Game</button>
+      </form>
+    ) : null;
 
     return (
       <div className="App">
@@ -101,25 +117,9 @@ class App extends Component {
           warlock that has changed everyone into a circle! Please buy my DLC and
           pay for my student loans, thanks guys.
         </p>
-        <form onSubmit={this.handleSubmit}>
-          <input name="id" onChange={this.handleChange} value={this.state.id} />
-          <br />
-          <input
-            name="name"
-            onChange={this.handleChange}
-            value={this.state.name}
-          />
-          <br />
-          <input
-            name="status"
-            onChange={this.handleChange}
-            value={this.state.status}
-          />
-          <br />
-          <button type="submit">Join Game</button>
-        </form>
 
-        <div className="App-game">{characterList}</div>
+        {displayForm}
+        {displayGame}
       </div>
     );
   }

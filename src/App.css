@@ -31,3 +31,9 @@
   font-size: large;
   text-align: center;
 }
+
+form {
+  width: 250px;
+  margin: auto;
+  display: block;
+}
