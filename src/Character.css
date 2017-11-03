@@ -1,0 +1,22 @@
+.character {
+  display: inline-block;
+  position: relative;
+  width: 150px;
+  height: 150px;
+  text-align: center;
+}
+
+.circle {
+  box-sizing: border-box;
+  display: block;
+  margin: 5px auto 10px auto;
+  width: 20px;
+  height: 20px;
+  border: 20px solid pink;
+  border-radius: 20px;
+}
+
+.status {
+  display: block;
+  font-size: 9px;
+}
