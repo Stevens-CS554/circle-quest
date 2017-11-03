@@ -1,7 +1,7 @@
 import React, { Component } from "react";
-import logo from "./logo.svg";
 import "./App.css";
 import Character from "./Character";
+const Pusher = window.Pusher;
 
 class App extends Component {
   constructor(props) {
@@ -19,7 +19,17 @@ class App extends Component {
       id: "",
       status: ""
     };
+
+    Pusher.logToConsole = true;
+    const pusher = new Pusher("b280c5d944f17da55d8b", {
+      cluster: "us2",
+      encrypted: true
+    });
+
+    this.channel = pusher.subscribe("circle-quest");
   }
+
+  channel = null;
 
   componentDidMount() {
     setTimeout(() => {

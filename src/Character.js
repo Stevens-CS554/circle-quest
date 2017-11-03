@@ -1,8 +1,8 @@
-import React, { Component } from "react";
+import React from "react";
 import "./Character.css";
 
 function Character({ character }) {
-  const { name, currentLocation, status, id } = character;
+  const { name, currentLocation, status } = character;
 
   const style = {
     transform: `translate(${currentLocation.x}px, ${currentLocation.y}px`
