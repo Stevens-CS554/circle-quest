@@ -17,6 +17,28 @@ class App extends Component {
   componentDidMount() {
     this.socket = io("https://secret-hollows-54069.herokuapp.com/circle-quest");
   }
+  playerMoved = moveInformation => {
+    const { characterId, direction } = moveInformation;
+    if (!this.state.characters[characterId]) return;
+
+    const character = this.state.characters[characterId];
+    const delta = 15;
+
+    let newX = character.currentLocation.x;
+    let newY = character.currentLocation.y;
+
+    if (direction === "left") {
+      newX -= delta;
+    } else if (direction === "right") {
+      newX += delta;
+    } else if (direction === "down") {
+      newY += delta;
+    } else if (direction === "up") {
+      newY -= delta;
+    }
+
+    this.changeCharacterLocation(character, newX, newY);
+  };
 
   changeCharacterLocation = (character, newX, newY) => {
     const newState = {
@@ -57,9 +79,17 @@ class App extends Component {
     };
 
     this.socket.on("player-joined", this.onCharacterCreated);
+    this.socket.on("player-moved", this.playerMoved);
 
     this.socket.emit("join", newCharacter);
   };
+
+  moveMe(direction) {
+    this.socket.emit("move", {
+      characterId: this.state.id,
+      direction
+    });
+  }
 
   handleChange = e => {
     e.preventDefault();
@@ -75,7 +105,43 @@ class App extends Component {
     const displayGame = !showForm ? (
       <p>Please fill out the form to join the game</p>
     ) : (
-      <div className="App-game">{characterList}</div>
+      <div>
+        <div>
+          <button
+            onClick={e => {
+              e.preventDefault();
+              this.moveMe("up");
+            }}
+          >
+            Up
+          </button>
+          <button
+            onClick={e => {
+              e.preventDefault();
+              this.moveMe("down");
+            }}
+          >
+            Down
+          </button>
+          <button
+            onClick={e => {
+              e.preventDefault();
+              this.moveMe("left");
+            }}
+          >
+            Left
+          </button>
+          <button
+            onClick={e => {
+              e.preventDefault();
+              this.moveMe("right");
+            }}
+          >
+            Right
+          </button>
+        </div>
+        <div className="App-game">{characterList}</div>
+      </div>
     );
 
     const displayForm = !showForm ? (
